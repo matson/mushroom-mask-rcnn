@@ -61,7 +61,10 @@ augmentations = A.Compose([
         p=0.6
     ),
     A.HorizontalFlip(p=0.5),
-    A.VerticalFlip(p=0.5)
+    A.VerticalFlip(p=0.5),
+    A.RandomBrightnessContrast(p=0.5),
+    A.GaussianBlur(p=0.3),
+    A.HueSaturationValue(p=0.4)
 ])
 
 
@@ -78,7 +81,7 @@ def mask_to_box(mask):
 
 # -------- CUSTOM DATASET CLASS --------
 class MushroomCOCODataset(Dataset):
-    def __init__(self, images_dir, annotations_file, augmentations=None, resize=(512, 512)):
+    def __init__(self, images_dir, annotations_file, augmentations=None, resize=(640, 640)):
         self.images_dir = images_dir
         self.coco = COCO(annotations_file)
         self.augmentations = augmentations
@@ -182,7 +185,7 @@ train_dataset = MushroomCOCODataset(
     images_dir=r"C:\data\M18KV2\train\rgb",
     annotations_file=r"C:\data\M18KV2\train\annotations_coco.json",
     augmentations=augmentations,
-    resize=(512, 512)
+    resize=(640, 640)
 )
 
 train_loader = DataLoader(
@@ -198,7 +201,7 @@ val_dataset = MushroomCOCODataset(
     images_dir=r"C:\data\M18KV2\valid\rgb",
     annotations_file=r"C:\data\M18KV2\valid\annotations_coco.json",
     augmentations=None,
-    resize=(512, 512)
+    resize=(640, 640)
 )
 
 val_loader = DataLoader(
@@ -209,6 +212,7 @@ val_loader = DataLoader(
     num_workers=2,
     pin_memory=True
 )
+
 
 # -------- LOAD MODEL (Mask R-CNN) --------
 num_classes = 4  # background + Mushrooms + BB + WB
@@ -235,9 +239,17 @@ model.to(device)
 params = [p for p in model.parameters() if p.requires_grad]
 optimizer = torch.optim.SGD(params, lr=0.005, momentum=0.9, weight_decay=0.0001)
 
-# -------- TRAINING FROM SCRATCH --------
+# -------- RESUME FROM CHECKPOINT --------
+checkpoint_path = "best_maskrcnn_mushroom_FULL.pth"
 start_epoch = 1
 best_val_loss = float('inf')
+
+if os.path.exists(checkpoint_path):
+    print(f"--- Loading Checkpoint: {checkpoint_path} ---")
+    checkpoint = torch.load(checkpoint_path, map_location=device)
+    model.load_state_dict(checkpoint['model_state_dict'])
+    best_val_loss = checkpoint.get('best_val_loss', float('inf'))
+    print(f"Resuming from best checkpoint (val loss: {best_val_loss:.4f})")
 
 # -------- SCHEDULER --------
 lr_scheduler = torch.optim.lr_scheduler.CosineAnnealingWarmRestarts(
@@ -247,7 +259,7 @@ lr_scheduler = torch.optim.lr_scheduler.CosineAnnealingWarmRestarts(
 # -------- TRAINING LOOP --------
 def main():
 
-    accum_steps = 8
+    accum_steps = 16
 
     print("entering training")
     global start_epoch, best_val_loss
@@ -330,7 +342,7 @@ def main():
         plt.title('Training & Validation Loss')
         plt.legend()
         plt.grid(True)
-        plt.savefig("loss_curve.png")
+        plt.savefig("loss_curve_run2.png")
         plt.close()
 
         print(f"\nEvaluating mAP on validation set for epoch {epoch}...")
