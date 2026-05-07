@@ -4,17 +4,17 @@ import random
 import matplotlib.pyplot as plt
 import matplotlib.patches as patches
 
-from torchvision.models.detection import maskrcnn_resnet50_fpn, MaskRCNN_ResNet50_FPN_Weights
+from torchvision.models.detection import maskrcnn_resnet50_fpn_v2, MaskRCNN_ResNet50_FPN_V2_Weights
 from torchvision.models.detection.faster_rcnn import FastRCNNPredictor
 from torchvision.models.detection.mask_rcnn import MaskRCNNPredictor
 
-from train_model import MushroomCOCODataset
+from train_model2 import MushroomCOCODataset
 
 # -------- CONFIG --------
 SCORE_THRESHOLD = 0.5
 MASK_THRESHOLD  = 0.5
 NUM_IMAGES      = 5
-CHECKPOINT_PATH = "best_maskrcnn_mushroom_FULL.pth"
+CHECKPOINT_PATH = "best_maskrcnn_v2_mushroom_FULL.pth"
 
 CATEGORY_NAMES = {
     1: "Mushrooms",
@@ -43,8 +43,8 @@ test_dataset = MushroomCOCODataset(
 # -------- LOAD MODEL --------
 num_classes = 4
 
-weights = MaskRCNN_ResNet50_FPN_Weights.DEFAULT
-model = maskrcnn_resnet50_fpn(
+weights = MaskRCNN_ResNet50_FPN_V2_Weights.DEFAULT
+model = maskrcnn_resnet50_fpn_v2(
     weights=weights,
     rpn_post_nms_top_n_train=500,
     box_detections_per_img=220
@@ -125,10 +125,17 @@ print("Saved predictions_test.png")
 
 
 # maskrcnn_resnet50_fpn
-# Run │ Epochs │  Train  │   Val   │                                          
+# Run │ Epochs │  Train  │   Val   │
 #   ├─────┼────────┼─────────┼─────────┤
-#   │ 1   │ 20     │ 0.4394  │ 0.3783  │                                          
+#   │ 1   │ 20     │ 0.4394  │ 0.3783  │
 #   ├─────┼────────┼─────────┼─────────┤
-#   │ 2   │ 20     │ 0.4238  │ 0.3597  │        
-#   ├─────┼────────┼─────────┼─────────┤    
-#   │ 3   │ 20     │ unknown │ unknown 
+#   │ 2   │ 20     │ 0.4238  │ 0.3597  │
+#   ├─────┼────────┼─────────┼─────────┤
+#   │ 3   │ 20     │ unknown │ unknown │
+
+# maskrcnn_resnet50_fpn_v2
+# Run │ Epochs │  Train  │   Val   │
+#   ├─────┼────────┼─────────┼─────────┤
+#   │ 1   │ 20     │ 0.4095  │ 0.3681  │
+#   ├─────┼────────┼─────────┼─────────┤
+#   │ 2   │ 20     │ -       │ -       │
