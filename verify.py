@@ -4,7 +4,7 @@ import random
 import matplotlib.pyplot as plt
 import matplotlib.patches as patches
 
-from torchvision.models.detection import maskrcnn_resnet50_fpn_v2, MaskRCNN_ResNet50_FPN_V2_Weights
+from torchvision.models.detection import maskrcnn_resnet50_fpn, MaskRCNN_ResNet50_FPN_Weights
 from torchvision.models.detection.faster_rcnn import FastRCNNPredictor
 from torchvision.models.detection.mask_rcnn import MaskRCNNPredictor
 
@@ -43,8 +43,8 @@ test_dataset = MushroomCOCODataset(
 # -------- LOAD MODEL --------
 num_classes = 4
 
-weights = MaskRCNN_ResNet50_FPN_V2_Weights.DEFAULT
-model = maskrcnn_resnet50_fpn_v2(
+weights = MaskRCNN_ResNet50_FPN_Weights.DEFAULT
+model = maskrcnn_resnet50_fpn(
     weights=weights,
     rpn_post_nms_top_n_train=500,
     box_detections_per_img=220
