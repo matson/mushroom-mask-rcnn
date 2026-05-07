@@ -234,15 +234,26 @@ model.to(device)
 
 # -------- OPTIMIZER --------
 params = [p for p in model.parameters() if p.requires_grad]
-optimizer = torch.optim.SGD(params, lr=0.005, momentum=0.9, weight_decay=0.0001)
+optimizer = torch.optim.SGD(params, lr=0.002, momentum=0.9, weight_decay=0.0001)
 
-# -------- TRAINING FROM SCRATCH --------
-start_epoch = 1
+# -------- RESUME FROM CHECKPOINT --------
+checkpoint_path = "best_maskrcnn_v2_mushroom_FULL.pth"
+start_epoch = 21
 best_val_loss = float('inf')
+
+if os.path.exists(checkpoint_path):
+    print(f"--- Loading Checkpoint: {checkpoint_path} ---")
+    checkpoint = torch.load(checkpoint_path, map_location=device)
+    model.load_state_dict(checkpoint['model_state_dict'])
+    optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
+    best_val_loss = checkpoint.get('best_val_loss', float('inf'))
+    print(f"Resuming from epoch {start_epoch} (best val loss: {best_val_loss:.4f})")
+else:
+    print("No checkpoint found — starting from scratch.")
 
 # -------- SCHEDULER --------
 lr_scheduler = torch.optim.lr_scheduler.CosineAnnealingWarmRestarts(
-    optimizer, T_0=12, T_mult=1, eta_min=1e-6
+    optimizer, T_0=20, T_mult=1, eta_min=5e-5
 )
 
 # -------- TRAINING LOOP --------
