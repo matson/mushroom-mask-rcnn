@@ -234,11 +234,11 @@ model.to(device)
 
 # -------- OPTIMIZER --------
 params = [p for p in model.parameters() if p.requires_grad]
-optimizer = torch.optim.SGD(params, lr=0.001, momentum=0.9, weight_decay=0.0001)
+optimizer = torch.optim.SGD(params, lr=0.0005, momentum=0.9, weight_decay=0.0001)
 
 # -------- RESUME FROM CHECKPOINT --------
 checkpoint_path = "best_maskrcnn_v2_mushroom_FULL.pth"
-start_epoch = 41
+start_epoch = 61
 best_val_loss = float('inf')
 
 if os.path.exists(checkpoint_path):
@@ -253,7 +253,7 @@ else:
 
 # -------- SCHEDULER --------
 lr_scheduler = torch.optim.lr_scheduler.CosineAnnealingWarmRestarts(
-    optimizer, T_0=20, T_mult=1, eta_min=1e-5
+    optimizer, T_0=20, T_mult=1, eta_min=5e-6
 )
 
 # -------- TRAINING LOOP --------
@@ -342,7 +342,7 @@ def main():
         plt.title('Training & Validation Loss - MaskRCNN v2')
         plt.legend()
         plt.grid(True)
-        plt.savefig("loss_curve_v2_run3.png")
+        plt.savefig("loss_curve_v2_run4.png")
         plt.close()
 
         print(f"\nEvaluating mAP on validation set for epoch {epoch}...")
