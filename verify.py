@@ -141,3 +141,7 @@ print("Saved predictions_test.png")
 #   │ 2   │ 21-40  │ 0.3772 │ 0.3251 │
 #   ├─────┼────────┼────────┼────────┤
 #   │ 3   │ 41-60  │ 0.3544 │ 0.3083 │
+# Epoch 40 - Train Loss: 0.3772, Validation Loss: 0.3251
+# Epoch 60 - Train Loss: 0.3544, Validation Loss: 0.3083
+# Epoch 80 - Train Loss: 0.3395, Validation Loss: 0.3024
+
