@@ -50,6 +50,8 @@ device = torch.device("cuda") if torch.cuda.is_available() else torch.device("cp
 torch.cuda.empty_cache()
 torch.backends.cuda.max_split_size_mb = 64
 
+DEBUG_PRINTS = False
+
 # -------- AUGMENTATIONS --------
 augmentations = A.Compose([
     A.Affine(
@@ -238,7 +240,7 @@ optimizer = torch.optim.SGD(params, lr=0.0005, momentum=0.9, weight_decay=0.0001
 
 # -------- RESUME FROM CHECKPOINT --------
 checkpoint_path = "best_maskrcnn_v2_mushroom_FULL.pth"
-start_epoch = 61
+start_epoch = 81
 best_val_loss = float('inf')
 
 if os.path.exists(checkpoint_path):
@@ -275,6 +277,8 @@ def main():
         for batch_idx, (images, targets) in enumerate(loop):
 
             def mem(label):
+                if not DEBUG_PRINTS:
+                    return
                 torch.cuda.synchronize()
                 alloc = torch.cuda.memory_allocated() / 1024**2
                 peak  = torch.cuda.max_memory_allocated() / 1024**2
@@ -284,13 +288,15 @@ def main():
             targets = [{k: v.to(device) for k, v in t.items()} for t in targets]
             mem("after data→GPU")
 
-            print(f"  [Batch {batch_idx}] boxes in image: {[len(t['boxes']) for t in targets]}")
+            if DEBUG_PRINTS:
+                print(f"  [Batch {batch_idx}] boxes in image: {[len(t['boxes']) for t in targets]}")
 
             loss_dict = model(images, targets)
             mem("after forward")
 
             batch_loss = sum(loss for loss in loss_dict.values())
-            print(f"  [Batch {batch_idx}] losses: { {k: f'{v.item():.4f}' for k, v in loss_dict.items()} }")
+            if DEBUG_PRINTS:
+                print(f"  [Batch {batch_idx}] losses: { {k: f'{v.item():.4f}' for k, v in loss_dict.items()} }")
 
             (batch_loss / accum_steps).backward()
             mem("after backward")
@@ -342,7 +348,7 @@ def main():
         plt.title('Training & Validation Loss - MaskRCNN v2')
         plt.legend()
         plt.grid(True)
-        plt.savefig("loss_curve_v2_run4.png")
+        plt.savefig("loss_curve_v2_run5.png")
         plt.close()
 
         print(f"\nEvaluating mAP on validation set for epoch {epoch}...")
